@@ -50,7 +50,7 @@ class FileStorage:
             pass
 
     def delete(self, obj=None):
-        """Deletes obj from __objects if it's inside"""
+        """ Deletes an object """
         if obj is None:
             return
         else:
@@ -58,3 +58,7 @@ class FileStorage:
             if key in self.all():
                 del self.all()[key]
                 self.save()
+
+    def close(self):
+        """Calling the reload method."""
+        self.reload()
