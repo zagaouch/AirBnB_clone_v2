@@ -1,0 +1,6 @@
+__pycache__ /
+*.pyc
+main_delete.py
+test_params_create
+venv/
+file.json

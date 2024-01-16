@@ -24,7 +24,7 @@ class test_basemodel(unittest.TestCase):
     def tearDown(self):
         try:
             os.remove('file.json')
-        except:
+        except Exception:
             pass
 
     def test_default(self):
@@ -97,3 +97,16 @@ class test_basemodel(unittest.TestCase):
         n = new.to_dict()
         new = BaseModel(**n)
         self.assertFalse(new.created_at == new.updated_at)
+
+    # def test_delete(self):
+    #     """ """
+    #     new = self.value()
+    #     new.save()
+    #     key = self.name + "." + new.id
+    #     with open('file.json', 'r') as f:
+    #         j = json.load(f)
+    #         self.assertEqual(j[key], new.to_dict())
+    #     new.delete()
+    #     with open('file.json', 'r') as f:
+    #         j = json.load(f)
+    #         self.assertFalse(key in j)
