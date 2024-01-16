@@ -2,6 +2,7 @@
 """ Console Module """
 import cmd
 import sys
+import os
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -151,7 +152,7 @@ class HBNBCommand(cmd.Cmd):
                     continue
             # set the attribute of the new instance
             setattr(new_instance, key, value)
-        storage.save()
+        storage.new(new_instance)
         print(new_instance.id)
         storage.save()
         return new_instance
@@ -232,16 +233,16 @@ class HBNBCommand(cmd.Cmd):
         print_list = []
 
         if args:
-            args = args.split(' ')[0]  # remove possible trailing args
-            if args not in HBNBCommand.classes:
-                print("** class doesn't exist **")
-                return
-            for k, v in storage._FileStorage__objects.items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
+            args = args.split(' ')[0]
+            if args:
+                if args not in HBNBCommand.classes:
+                    print("** class doesn't exist **")
+                    return
+                for obj in storage.all(HBNBCommand.classes[args]).values():
+                    print_list.append(str(obj))
         else:
-            for k, v in storage._FileStorage__objects.items():
-                print_list.append(str(v))
+            for obj in storage.all().values():
+                print_list.append(str(obj))
 
         print(print_list)
 
