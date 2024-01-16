@@ -2,7 +2,8 @@
 This module defines the DBStorage class
 """
 
-from sqlalchemy import create_engine, sessionmaker, scoped_session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
 import os
 from models.base_model import Base
 from models.amenity import Amenity
@@ -32,7 +33,7 @@ class DBStorage:
 
         if os.getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
-
+        # Base.create_all(self.__engine)
         self.__session = scoped_session(sessionmaker(bind=self.__engine))
 
     def all(self, cls=None):
@@ -54,17 +55,21 @@ class DBStorage:
             for obj in objs:
                 key = "{}.{}".format(type(obj).__name__, obj.id)
                 result[key] = obj
+        return result
 
     def new(self, obj):
         """
             Adds a new object to the database
         """
+        print(".................adding...............")
+
         self.__session.add(obj)
 
     def save(self):
         """
             Saves to the db
         """
+        print(".................saving...............")
         self.__session.commit()
 
     def delete(self, obj=None):
