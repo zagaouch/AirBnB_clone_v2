@@ -8,7 +8,6 @@ import os
 from console import HBNBCommand
 
 
-
 class test_fileStorage(unittest.TestCase):
     """ Class to test the file storage method """
 
@@ -24,7 +23,7 @@ class test_fileStorage(unittest.TestCase):
         """ Remove storage file at end of tests """
         try:
             os.remove('file.json')
-        except:
+        except Exception:
             pass
 
     def test_obj_list_empty(self):
@@ -114,9 +113,9 @@ class test_fileStorage(unittest.TestCase):
     def test_delete(self):
         # Test removing an existing object
 
-        #create object
+        # create object
         new_obj = HBNBCommand().onecmd('create Place city_id=123')
-        #get number of items before storage
+        # get number of items before storage
         old_objs = len(storage.all())
         storage.delete(new_obj)
         all_objs = len(storage.all())

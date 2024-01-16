@@ -73,7 +73,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] is '{' and pline[-1] is'}'\
+                    if pline[0] == '{' and pline[-1] == '}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -119,23 +119,26 @@ class HBNBCommand(cmd.Cmd):
         if not args:
             print("** class name missing **")
             return
-        #split on white space the args string into an array list of strings
+        # split on white space the args string into an array list of strings
         args_list = args.split()
         if args_list[0] not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
         new_instance = HBNBCommand.classes[args_list[0]]()
-        #iterate through the remaing list of strings
+        # iterate through the remaing list of strings
         for arg in args_list[1:]:
-            #split each string into a list of key value pairs
+            # split each string into a list of key value pairs
             key_val = arg.split('=')
-            #ensure there are only 2 items in the list
+            # ensure there are only 2 items in the list
             if len(key_val) != 2:
                 continue
             key, value = key_val
-            if '"' in value:
+            if value.startswith('"'):
                 value = value.replace('"', '')
-                value = value.replace('_', ' ')
+                if '"' in value:
+                    value = value.replace('"', '\"')
+                if '_' in value:
+                    value = value.replace('_', ' ')
             elif '.' in value:
                 try:
                     value = float(value)
@@ -146,7 +149,7 @@ class HBNBCommand(cmd.Cmd):
                     value = int(value)
                 except ValueError:
                     continue
-            #set the attribute of the new instance
+            # set the attribute of the new instance
             setattr(new_instance, key, value)
         storage.save()
         print(new_instance.id)
@@ -299,7 +302,7 @@ class HBNBCommand(cmd.Cmd):
                 args.append(v)
         else:  # isolate args
             args = args[2]
-            if args and args[0] is '\"':  # check for quoted arg
+            if args and args[0] == '\"':  # check for quoted arg
                 second_quote = args.find('\"', 1)
                 att_name = args[1:second_quote]
                 args = args[second_quote + 1:]
@@ -307,10 +310,10 @@ class HBNBCommand(cmd.Cmd):
             args = args.partition(' ')
 
             # if att_name was not quoted arg
-            if not att_name and args[0] is not ' ':
+            if not att_name and args[0] != ' ':
                 att_name = args[0]
             # check for quoted val arg
-            if args[2] and args[2][0] is '\"':
+            if args[2] and args[2][0] == '\"':
                 att_val = args[2][1:args[2].find('\"', 1)]
 
             # if att_val was not quoted arg
@@ -346,6 +349,7 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
+
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
