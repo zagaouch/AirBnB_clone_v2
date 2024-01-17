@@ -2,30 +2,24 @@
 """ Place Module for HBNB project """
 
 
+from models.amenity import Amenity
 from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String, Integer, Float, ForeignKey, Table
 from sqlalchemy.orm import relationship
-from os import getenv
 import os
-from models.amenity import Amenity
 
 
-class PlaceAmenity(BaseModel, Base):
-    """PlaceAmenity class"""
-    __tablename__ = 'place_amenity'
-
-    place_id = Column(String(60),
-                      ForeignKey('places.id'),
-                      primary_key=True,
-                      nullable=False)
-    amenity_id = Column(String(60),
-                        ForeignKey('amenities.id'),
-                        primary_key=True,
-                        nullable=False)
-# place_amenity = Table('place_amenity', Base.metadata,
-#     Column('place_id', Integer, ForeignKey('places.id')),
-#     Column('amenity_id', Integer, ForeignKey('amenities.id'))
-# )
+if os.getenv("HBNB_TYPE_STORAGE") == "db":
+    place_amenity = Table('place_amenity', Base.metadata,
+                          Column('place_id', String(60),
+                                 ForeignKey('places.id'),
+                                 primary_key=True,
+                                 nullable=False),
+                          Column('amenity_id', String(60),
+                                 ForeignKey('amenities.id'),
+                                 primary_key=True,
+                                 nullable=False)
+                          )
 
 
 class Place(BaseModel, Base):
@@ -38,30 +32,19 @@ class Place(BaseModel, Base):
         city_id = Column(String(60), ForeignKey("cities.id"), nullable=False)
         user_id = Column(String(60), ForeignKey("users.id"), nullable=False)
         name = Column(String(128), nullable=False)
-        description = Column(String(1024), nullable=False)
-        number_rooms = Column(Integer(), nullable=False)
-        number_bathrooms = Column(Integer(), nullable=False)
-        max_guest = Column(Integer(), nullable=False)
-        price_by_night = Column(Integer(), nullable=False)
-        latitude = Column(Float(), nullable=False)
-        longitude = Column(Float(), nullable=False)
+        description = Column(String(1024), nullable=True)
+        number_rooms = Column(Integer(), nullable=False, default=0)
+        number_bathrooms = Column(Integer(), nullable=False, default=0)
+        max_guest = Column(Integer(), nullable=False, default=0)
+        price_by_night = Column(Integer(), nullable=False, default=0)
+        latitude = Column(Float(), nullable=True)
+        longitude = Column(Float(), nullable=True)
         reviews = relationship("Review", backref="place", cascade="delete")
         amenities = relationship("Amenity",
                                  secondary="place_amenity",
+                                 overlaps="place_amenities",
                                  viewonly=False)
-        if getenv('HBNB_TYPE_STORAGE') != 'db':
 
-            @property
-            def reviews(self):
-                """Get reviews if storage if filestorage"""
-                from models import storage
-                from models.review import Review
-                all_revs = storage.all(Review)
-                plc_revs = all_revs
-                for r in all_revs.values():
-                    if r.place_id == self.id:
-                        plc_revs.append(r)
-                return plc_revs
     else:
         city_id = ""
         user_id = ""
@@ -91,7 +74,17 @@ class Place(BaseModel, Base):
         @amenities.setter
         def amenities(self, obj):
             """Set amenities if storage if filestorage"""
-            from models import storage
-            from models.amenity import Amenity
             if type(obj) == Amenity:
                 self.amenity_ids.append(obj.id)
+
+        @property
+        def reviews(self):
+            """Get reviews if storage if filestorage"""
+            from models import storage
+            from models.review import Review
+            all_revs = storage.all(Review)
+            plc_revs = all_revs
+            for r in all_revs.values():
+                if r.place_id == self.id:
+                    plc_revs.append(r)
+            return plc_revs
