@@ -2,7 +2,7 @@
 from fabric.api import local, run
 
 
-def do_pack(number=0):
+def do_clean(number=0):
     """deletes old archives"""
     number = int(number)
     if number < 0:
