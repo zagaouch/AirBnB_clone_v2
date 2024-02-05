@@ -40,8 +40,8 @@ def do_deploy():
 def deploy():
     """packs and deploys"""
     archive_path = do_pack()
-    if not archive_path:
-        return False
+    #if not archive_path:
+     #   return False
     return do_deploy(archive_path)
 
 
