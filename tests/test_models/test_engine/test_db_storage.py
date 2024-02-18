@@ -1,115 +1,88 @@
-# #!/usr/bin/python3
-# """ Module for testing file storage"""
-# import unittest
-# from models.engine.db_storage import DBStorage
-# import os
-# import MySQLdb
-# from models.base_model import BaseModel
-# # from console import HBNBCommand
+#!/usr/bin/python3
+"""
+Contains the TestDBStorageDocs and TestDBStorage classes
+"""
+
+from datetime import datetime
+import inspect
+import models
+from models.engine import db_storage
+from models.amenity import Amenity
+from models.base_model import BaseModel
+from models.city import City
+from models.place import Place
+from models.review import Review
+from models.state import State
+from models.user import User
+import json
+import os
+import pep8
+import unittest
+DBStorage = db_storage.DBStorage
+classes = {"Amenity": Amenity, "City": City, "Place": Place,
+           "Review": Review, "State": State, "User": User}
 
 
-# @unittest.skipIf(os.getenv('HBNB_TYPE_STORAGE') != 'db',
-#                  'fileStorage test not supported')
-# class test_dbStorage(unittest.TestCase):
-#     """ Class to test the file storage method """
+class TestDBStorageDocs(unittest.TestCase):
+    """Tests to check the documentation and style of DBStorage class"""
+    @classmethod
+    def setUpClass(cls):
+        """Set up for the doc tests"""
+        cls.dbs_f = inspect.getmembers(DBStorage, inspect.isfunction)
 
-#     def setUp(self):
-#         """ Set up test environment """
-#         self.db = MySQLdb.connect(user='hbnb_test',
-#                                   passwd='hbnb_test_pwd',
-#                                   host='localhost',
-#                                   db='hbnb_test_db')
-#         self.cursor = self.db.cursor()
-#         self.storage = DBStorage()
-#         self.storage.reload()
+    def test_pep8_conformance_db_storage(self):
+        """Test that models/engine/db_storage.py conforms to PEP8."""
+        pep8s = pep8.StyleGuide(quiet=True)
+        result = pep8s.check_files(['models/engine/db_storage.py'])
+        self.assertEqual(result.total_errors, 0,
+                         "Found code style errors (and warnings).")
 
-#     def tearDown(self):
-#         """ Remove storage file at end of tests """
-#         try:
-#             self.db = MySQLdb.connect(user='hbnb_test',
-#                                       passwd='hbnb_test_pwd',
-#                                       host='localhost',
-#                                       db='hbnb_test_db')
-#             self.cursor = self.db.cursor()
-#             self.cursor.execute("SHOW TABLES")
-#             tables = self.cursor.fetchall()
-#             for table_name in tables:
-#                 self.cursor.execute(f"DROP TABLE IF EXISTS {table_name[0]}")
-#             self.db.commit()
-#         except Exception:
-#             pass
+    def test_pep8_conformance_test_db_storage(self):
+        """Test tests/test_models/test_db_storage.py conforms to PEP8."""
+        pep8s = pep8.StyleGuide(quiet=True)
+        result = pep8s.check_files(['tests/test_models/test_engine/\
+test_db_storage.py'])
+        self.assertEqual(result.total_errors, 0,
+                         "Found code style errors (and warnings).")
 
-#     def test_tables_empty(self):
-#         """ tables are initially empty """
-#         self.cursor.execute("SHOW TABLES")
-#         tables = self.cursor.fetchall()
-#         for table_name in tables:
-#             self.cursor.execute(f"SELECT * FROM {table_name[0]}")
-#             table = self.cursor.fetchall()
-#             self.assertEqual(len(table), 0)
+    def test_db_storage_module_docstring(self):
+        """Test for the db_storage.py module docstring"""
+        self.assertIsNot(db_storage.__doc__, None,
+                         "db_storage.py needs a docstring")
+        self.assertTrue(len(db_storage.__doc__) >= 1,
+                        "db_storage.py needs a docstring")
 
-#     def test_new(self):
-#         """ New object is correctly added to a session """
-#         new_item = BaseModel()
-#         self.storage.new(new_item)
-#         self.assertIn(new_item, self.storage.__session.new)
+    def test_db_storage_class_docstring(self):
+        """Test for the DBStorage class docstring"""
+        self.assertIsNot(DBStorage.__doc__, None,
+                         "DBStorage class needs a docstring")
+        self.assertTrue(len(DBStorage.__doc__) >= 1,
+                        "DBStorage class needs a docstring")
 
-#     def test_all(self):
-#         """ all table values are properly returned """
-#         new_item1 = BaseModel()
-#         new_item2 = BaseModel()
-#         new_item3 = BaseModel()
-#         self.storage.new(new_item1)
-#         self.storage.new(new_item2)
-#         self.storage.new(new_item3)
-#         self.storage.save()
-#         result = self.storage.all(BaseModel)
-#         self.assertIsInstance(result, dict)
-#         self.assertIn(new_item1, result.values())
-#         self.assertIn(new_item2, result.values())
-#         self.assertIn(new_item3, result.values())
+    def test_dbs_func_docstrings(self):
+        """Test for the presence of docstrings in DBStorage methods"""
+        for func in self.dbs_f:
+            self.assertIsNot(func[1].__doc__, None,
+                             "{:s} method needs a docstring".format(func[0]))
+            self.assertTrue(len(func[1].__doc__) >= 1,
+                            "{:s} method needs a docstring".format(func[0]))
 
-#     def test_save(self):
-#         """ DBStorage save method """
-#         new_item = BaseModel()
-#         self.storage.new(new_item)
-#         self.storage.save()
-#         result = self.storage.all(BaseModel).values()
-#         self.assertIn(new_item, result)
 
-#     # def test_reload(self):
-#     #     """ Storage file is successfully loaded to __objects """
-#     #     new = BaseModel()
-#     #     storage.save()
-#     #     storage.reload()
-#     #     for obj in storage.all().values():
-#     #         loaded = obj
-#     #     self.assertEqual(new.to_dict()['id'], loaded.to_dict()['id'])
+class TestFileStorage(unittest.TestCase):
+    """Test the FileStorage class"""
+    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
+    def test_all_returns_dict(self):
+        """Test that all returns a dictionaty"""
+        self.assertIs(type(models.storage.all()), dict)
 
-#     # def test_reload_empty(self):
-#     #     """ Load from an empty file """
-#     #     with open('file.json', 'w') as f:
-#     #         pass
-#     #     with self.assertRaises(ValueError):
-#     #         storage.reload()
+    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
+    def test_all_no_class(self):
+        """Test that all returns all rows when no class is passed"""
 
-#     # def test_reload_from_nonexistent(self):
-#     #     """ Nothing happens if file does not exist """
-#     #     self.assertEqual(storage.reload(), None)
+    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
+    def test_new(self):
+        """test that new adds an object to the database"""
 
-#     # def test_base_model_save(self):
-#     #     """ BaseModel save method calls storage save """
-#     #     new = BaseModel()
-#     #     new.save()
-#     #     self.assertTrue(os.path.exists('file.json'))
-
-#     # def test_delete(self):
-#     #     # Test removing an existing object
-
-#     #     # create object
-#     #     new_obj = HBNBCommand().onecmd('create Place city_id=123')
-#     #     # get number of items before storage
-#     #     old_objs = len(storage.all())
-#     #     storage.delete(new_obj)
-#     #     all_objs = len(storage.all())
-#     #     self.assertEqual(all_objs, old_objs - 1)
+    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
+    def test_save(self):
+        """Test that save properly saves objects to file.json"""

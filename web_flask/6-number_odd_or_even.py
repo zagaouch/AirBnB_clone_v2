@@ -52,7 +52,7 @@ def numbersandevenness(n):
     else:
         evenness = 'odd'
     return render_template('6-number_odd_or_even.html', n=n,
-                           evenis=evenness)
+                           evenness=evenness)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port='5000')
